@@ -11,6 +11,12 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
+  async getProfile(userId: number): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    // if (!user) throw new UnauthorizedException(); // такого пользователя нет
+    return user;
+  }
+
   async findOneBy<T extends keyof User>(
     name: T,
     value: User[T],

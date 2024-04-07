@@ -10,14 +10,40 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RefreshToken } from '../entities/refresh-token.entity';
 
+import { HttpException, HttpStatus } from '@nestjs/common';
+
+export class NotFoundException extends HttpException {
+  constructor(message: string) {
+    super(message, HttpStatus.NOT_FOUND);
+  }
+}
+
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(RefreshToken)
+    private readonly tokenRepository: Repository<RefreshToken>,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-    @InjectRepository(RefreshToken)
-    private readonly tokenService: Repository<RefreshToken>,
   ) {}
+
+  async logout(userId: number) {
+    await this.tokenRepository.delete({ userId });
+  }
+
+  async refresh(refreshToken: string) {
+    const rt = await this.tokenRepository.findOne({
+      where: { token: refreshToken },
+    });
+
+    if (!rt) {
+      throw new NotFoundException('');
+    }
+
+    const tokens = await this.getTokens(rt.userId);
+    await this.tokenRepository.save({ ...rt, token: tokens.refresh_token });
+    return tokens;
+  }
 
   async signUp(createUserDto: CreateUserDto) {
     let user = await this.userService.findOneBy('email', createUserDto.email);
@@ -28,7 +54,7 @@ export class AuthService {
 
     user = await this.userService.createOne(createUserDto);
     const tokens = await this.getTokens(user.id);
-    await this.tokenService.save({
+    await this.tokenRepository.save({
       userId: user.id,
       token: tokens.refresh_token,
     });
@@ -41,6 +67,14 @@ export class AuthService {
     if (user?.password !== createUserDto.password) {
       throw new UnauthorizedException();
     }
+
+    const tokens = await this.getTokens(user.id);
+    await this.tokenRepository.save({
+      userId: user.id,
+      token: tokens.refresh_token,
+    });
+
+    return tokens;
   }
 
   async getTokens(id: number) {
