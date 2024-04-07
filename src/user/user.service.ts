@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -13,7 +13,7 @@ export class UserService {
 
   async getProfile(userId: number): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    // if (!user) throw new UnauthorizedException(); // такого пользователя нет
+    if (!user) throw new NotFoundException();
     return user;
   }
 
@@ -39,23 +39,16 @@ export class UserService {
     return this.userRepository.save(createUserDto);
   }
 
-  async updateOne(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    return this.userRepository
-      .createQueryBuilder()
-      .update()
-      .where('id = :id', { id })
-      .set({ ...updateUserDto })
-      .returning('*')
-      .execute()
-      .then(({ raw }) => raw[0]);
+  async updateOne(id: number, updateUserDto: UpdateUserDto): Promise<void> {
+    await this.userRepository.update(id, updateUserDto);
   }
 
   async deleteProfile(id: number): Promise<void> {
-    await this.userRepository
-      .createQueryBuilder()
-      .update()
-      .set({ name: null, address: null, phonenumber: null, summary: null })
-      .where('id = :id', { id })
-      .execute();
+    await this.userRepository.update(id, {
+      name: null,
+      address: null,
+      phonenumber: null,
+      summary: null,
+    });
   }
 }

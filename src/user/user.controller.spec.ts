@@ -50,7 +50,7 @@ describe('UserController', () => {
       .spyOn(userRepo, 'findOne')
       .mockImplementation(() => Promise.resolve(user));
 
-    const result = await controller.me({ user: { id: 0 } });
+    const result = await controller.getProfile({ user: { id: 0 } });
     expect(result).toEqual(user);
   });
 });

@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from '../user/dto/create-user.dto';
@@ -9,14 +10,6 @@ import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RefreshToken } from '../entities/refresh-token.entity';
-
-import { HttpException, HttpStatus } from '@nestjs/common';
-
-export class NotFoundException extends HttpException {
-  constructor(message: string) {
-    super(message, HttpStatus.NOT_FOUND);
-  }
-}
 
 @Injectable()
 export class AuthService {
@@ -37,7 +30,7 @@ export class AuthService {
     });
 
     if (!rt) {
-      throw new NotFoundException('');
+      throw new NotFoundException();
     }
 
     const tokens = await this.getTokens(rt.userId);
