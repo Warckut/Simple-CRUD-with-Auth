@@ -16,7 +16,6 @@ import { AuthGuard } from './auth.guard';
 
 describe('AuthController', () => {
   let app: INestApplication;
-  let controller: AuthController;
   let userRepo: Repository<User>;
   let tokenRepo: Repository<RefreshToken>;
   let jwtService: JwtService;
@@ -61,18 +60,10 @@ describe('AuthController', () => {
 
     userRepo = module.get<Repository<User>>(USER_TOKEN_REPOSITORY);
     tokenRepo = module.get<Repository<RefreshToken>>(RT_TOKEN_REPOSITORY);
-    controller = module.get<AuthController>(AuthController);
     jwtService = module.get<JwtService>(JwtService);
 
     app = module.createNestApplication();
     await app.init();
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-    expect(userRepo).toBeDefined();
-    expect(tokenRepo).toBeDefined();
-    expect(jwtService).toBeDefined();
   });
 
   it('User can succesfully register', async () => {

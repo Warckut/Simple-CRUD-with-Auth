@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { User } from './entities/user.entity';
 import { RefreshToken } from './entities/refresh-token.entity';
+import { TestModule } from './test/test.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { RefreshToken } from './entities/refresh-token.entity';
     }),
     AuthModule,
     UserModule,
+    TestModule,
   ],
   controllers: [AppController],
   providers: [AppService],
